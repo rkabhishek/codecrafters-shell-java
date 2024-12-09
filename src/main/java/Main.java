@@ -13,7 +13,15 @@ public class Main {
                 System.exit(0);
             }
 
-            System.out.println(input + ": command not found");
+            String[] parts = input.split(" ", 2);
+            String command = parts[0];
+            String arguments = parts.length > 1 ? parts[1] : "";
+
+            if (command.equals("echo")) {
+                System.out.println(arguments);
+            } else {
+                System.out.println(input + ": command not found");
+            }
         }
     }
 }
