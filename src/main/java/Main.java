@@ -1,6 +1,9 @@
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -12,9 +15,6 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        String pathStr = System.getenv("PATH");
-        String[] paths = pathStr.split(File.pathSeparator);
-        // Uncomment this block to pass the first stage
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -32,35 +32,46 @@ public class Main {
             if (command.equals(ECHO)) {
                 System.out.println(argument);
             } else if (command.equals(TYPE)) {
-                handleType(argument, paths);
+                handleType(argument);
             } else {
                 System.out.println(input + ": command not found");
             }
         }
     }
 
-    private static void handleType(String argument, String[] paths) {
-        argument = argument.trim();
-        if (argument.isEmpty()) {
+    private static void handleType(String cmd) {
+        cmd = cmd.trim();
+        if (cmd.isEmpty()) {
             return;
         }
 
-        if (BUILT_IN_COMMANDS.contains(argument)) {
-            System.out.println(argument + " is a shell builtin");
+        if (BUILT_IN_COMMANDS.contains(cmd)) {
+            System.out.println(cmd + " is a shell builtin");
         } else {
-            boolean found = false;
-            for (String path : paths) {
-                File f = new File(path, argument);
-                if (f.isFile()) {
-                    System.out.println(argument + " is " + f.getAbsolutePath());
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                System.out.println(argument + ": not found");
+            Optional<String> path = getPath(cmd);
+            if (path.isPresent()) {
+                System.out.println(cmd + " is " + path.get());
+            } else {
+                System.out.println(cmd + ": not found");
             }
         }
+    }
+
+    private static Optional<String> getPath(String cmd) {
+        String pathStr = System.getenv("PATH");
+        if (pathStr == null || pathStr.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String[] paths = pathStr.split(File.pathSeparator);
+
+        for (String path : paths) {
+            Path fullPath = Path.of(path, cmd);
+            if (Files.isRegularFile(fullPath)) {
+                return Optional.of(fullPath.toString());
+            }
+        }
+
+        return Optional.empty();
     }
 }
