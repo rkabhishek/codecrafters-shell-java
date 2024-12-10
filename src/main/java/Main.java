@@ -1,4 +1,5 @@
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -7,7 +8,7 @@ public class Main {
     private static final String EXIT = "exit";
     private static final String ECHO = "echo";
 
-    private static final String[] BUILT_IN_COMMANDS = {EXIT, ECHO, TYPE};
+    private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE);
 
     public static void main(String[] args) throws Exception {
         // Uncomment this block to pass the first stage
@@ -28,21 +29,22 @@ public class Main {
             if (command.equals(ECHO)) {
                 System.out.println(argument);
             } else if (command.equals(TYPE)) {
-                boolean found = false;
-                for (String str : BUILT_IN_COMMANDS) {
-                    if (str.equals(argument)) {
-                        found = true;
-                        System.out.println(str + " is a shell builtin");
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    System.out.println(argument + ": not found");
-                }
+                handleType(argument);
             } else {
                 System.out.println(input + ": command not found");
             }
+        }
+    }
+
+    private static void handleType(String argument) {
+        if (argument.trim().isEmpty()) {
+            return;
+        }
+
+        if (BUILT_IN_COMMANDS.contains(argument)) {
+            System.out.println(argument + " is a shell builtin");
+        } else {
+            System.out.println(argument + ": not found");
         }
     }
 }
