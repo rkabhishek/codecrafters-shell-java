@@ -1,3 +1,4 @@
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -7,10 +8,12 @@ public class Main {
     private static final String TYPE = "type";
     private static final String EXIT = "exit";
     private static final String ECHO = "echo";
-
     private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE);
 
     public static void main(String[] args) throws Exception {
+
+        String pathStr = System.getenv("PATH");
+        String[] paths = pathStr.split(File.pathSeparator);
         // Uncomment this block to pass the first stage
         Scanner scanner = new Scanner(System.in);
 
@@ -29,22 +32,35 @@ public class Main {
             if (command.equals(ECHO)) {
                 System.out.println(argument);
             } else if (command.equals(TYPE)) {
-                handleType(argument);
+                handleType(argument, paths);
             } else {
                 System.out.println(input + ": command not found");
             }
         }
     }
 
-    private static void handleType(String argument) {
-        if (argument.trim().isEmpty()) {
+    private static void handleType(String argument, String[] paths) {
+        argument = argument.trim();
+        if (argument.isEmpty()) {
             return;
         }
 
         if (BUILT_IN_COMMANDS.contains(argument)) {
             System.out.println(argument + " is a shell builtin");
         } else {
-            System.out.println(argument + ": not found");
+            boolean found = false;
+            for (String path : paths) {
+                File f = new File(path, argument);
+                if (f.isFile()) {
+                    System.out.println(argument + " is " + f.getAbsolutePath());
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                System.out.println(argument + ": not found");
+            }
         }
     }
 }
