@@ -3,10 +3,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 public class Main {
 
@@ -15,7 +12,7 @@ public class Main {
     private static final String ECHO = "echo";
     private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 
         Scanner scanner = new Scanner(System.in);
 
@@ -27,41 +24,44 @@ public class Main {
                 System.exit(0);
             }
 
-            String[] parts = input.split(" ", 2);
+            String[] parts = input.split(" ");
             String command = parts[0];
-            String argument = parts.length > 1 ? parts[1] : "";
+            List<String> arguments = Arrays.asList(Arrays.copyOfRange(parts, 1, parts.length));
 
             if (command.equals(ECHO)) {
-                System.out.println(argument);
+                handleEcho(arguments);
             } else if (command.equals(TYPE)) {
-                handleType(argument);
+                handleType(arguments);
             } else {
-
-                Optional<String> pathOp = getPath(command);
-                if (pathOp.isPresent()) {
-                   String path = pathOp.get();
-                   executeCommand(path, argument);
-                } else {
-                    System.out.println(input + ": command not found");
-                }
+                executeCommand(command, arguments);
             }
+
         }
     }
 
-    private static void handleType(String cmd) {
-        cmd = cmd.trim();
-        if (cmd.isEmpty()) {
+    private static void handleEcho(List<String> arguments) {
+        StringBuilder sb = new StringBuilder();
+        for (String arg : arguments) {
+            sb.append(arg).append(" ");
+        }
+        System.out.println(sb.toString().trim());
+    }
+
+    private static void handleType(List<String> arguments) {
+        if (arguments.isEmpty()) {
             return;
         }
 
-        if (BUILT_IN_COMMANDS.contains(cmd)) {
-            System.out.println(cmd + " is a shell builtin");
-        } else {
-            Optional<String> path = getPath(cmd);
-            if (path.isPresent()) {
-                System.out.println(cmd + " is " + path.get());
+        for (String arg : arguments) {
+            if (BUILT_IN_COMMANDS.contains(arg)) {
+                System.out.println(arg + " is a shell builtin");
             } else {
-                System.out.println(cmd + ": not found");
+                Optional<String> path = getPath(arg);
+                if (path.isPresent()) {
+                    System.out.println(arg + " is " + path.get());
+                } else {
+                    System.out.println(arg + ": not found");
+                }
             }
         }
     }
@@ -84,16 +84,27 @@ public class Main {
         return Optional.empty();
     }
 
-    private static void executeCommand(String cmdPath, String argument) {
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder(cmdPath, argument);
-            processBuilder.inheritIO();
-            Process process = processBuilder.start();
-            process.waitFor();
-        } catch (IOException e) {
-            System.err.println("I/O error: " +  e.getMessage());
-        } catch (InterruptedException e) {
-            System.err.println("Process interrupted: " + e.getMessage());
+    private static void executeCommand(String command, List<String> arguments) {
+        Optional<String> pathOp = getPath(command);
+
+        if (pathOp.isPresent()) {
+            String path = pathOp.get();
+
+            try {
+                List<String> commandList = new ArrayList<>();
+                commandList.add(path);
+                commandList.addAll(arguments);
+                ProcessBuilder processBuilder = new ProcessBuilder(commandList);
+                processBuilder.inheritIO();
+                Process process = processBuilder.start();
+                process.waitFor();
+            } catch (IOException e) {
+                System.err.println("I/O error: " +  e.getMessage());
+            } catch (InterruptedException e) {
+                System.err.println("Process interrupted: " + e.getMessage());
+            }
+        } else {
+            System.out.println(command + ": command not found");
         }
     }
 }
