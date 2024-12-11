@@ -1,4 +1,6 @@
 import java.io.File;
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -34,7 +36,14 @@ public class Main {
             } else if (command.equals(TYPE)) {
                 handleType(argument);
             } else {
-                System.out.println(input + ": command not found");
+
+                Optional<String> pathOp = getPath(command);
+                if (pathOp.isPresent()) {
+                   String path = pathOp.get();
+                   executeCommand(path, argument);
+                } else {
+                    System.out.println(input + ": command not found");
+                }
             }
         }
     }
@@ -67,11 +76,24 @@ public class Main {
 
         for (String path : paths) {
             Path fullPath = Path.of(path, cmd);
-            if (Files.isRegularFile(fullPath)) {
+            if (Files.isRegularFile(fullPath) && Files.isExecutable(fullPath)) {
                 return Optional.of(fullPath.toString());
             }
         }
 
         return Optional.empty();
+    }
+
+    private static void executeCommand(String cmdPath, String argument) {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder(cmdPath, argument);
+            processBuilder.inheritIO();
+            Process process = processBuilder.start();
+            process.waitFor();
+        } catch (IOException e) {
+            System.err.println("I/O error: " +  e.getMessage());
+        } catch (InterruptedException e) {
+            System.err.println("Process interrupted: " + e.getMessage());
+        }
     }
 }
