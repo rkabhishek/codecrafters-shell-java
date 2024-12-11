@@ -10,7 +10,9 @@ public class Main {
     private static final String TYPE = "type";
     private static final String EXIT = "exit";
     private static final String ECHO = "echo";
-    private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE);
+    private static final String PWD = "pwd";
+    private static final String USER_DIR = "user.dir";
+    private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE, PWD);
 
     public static void main(String[] args) {
 
@@ -32,12 +34,14 @@ public class Main {
                 handleEcho(arguments);
             } else if (command.equals(TYPE)) {
                 handleType(arguments);
+            } else if (command.equals(PWD)) {
+                handlePwd();
             } else {
                 executeCommand(command, arguments);
             }
-
         }
     }
+
 
     private static void handleEcho(List<String> arguments) {
         StringBuilder sb = new StringBuilder();
@@ -64,6 +68,11 @@ public class Main {
                 }
             }
         }
+    }
+
+    private static void handlePwd() {
+        String currentDirectory = System.getProperty(USER_DIR);
+        System.out.println(currentDirectory);
     }
 
     private static Optional<String> getPath(String cmd) {
