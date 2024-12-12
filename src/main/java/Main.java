@@ -15,6 +15,8 @@ public class Main {
     private static final String CD = "cd";
     private static final String USER_DIR = "user.dir";
     private static final String USER_HOME = "user.home";
+    private static final String HOME = "HOME";
+    private static final String HOME_SYMBOL = "~";
     private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE, PWD, CD);
     private static Path currentDirectory = Paths.get(System.getProperty(USER_DIR));
 
@@ -86,7 +88,15 @@ public class Main {
             return;
         }
 
-        String pathStr = arguments.isEmpty() ? System.getProperty(USER_HOME) : arguments.get(0);
+        String pathStr;
+        if (arguments.isEmpty()) {
+            pathStr = resolveHomeDirectory();
+        } else if (arguments.get(0).startsWith(HOME_SYMBOL)) {
+            pathStr = arguments.get(0).replace(HOME_SYMBOL, resolveHomeDirectory());
+        } else {
+            pathStr = arguments.get(0);
+        }
+
         Path newPath = currentDirectory.resolve(pathStr).normalize();
 
         if (Files.isDirectory(newPath)) {
@@ -94,6 +104,15 @@ public class Main {
         } else {
             System.out.println("cd: " + pathStr + ": No such file or directory");
         }
+    }
+
+    private static String resolveHomeDirectory() {
+        String home = System.getenv(HOME);
+        if (home == null || home.isEmpty()) {
+            home = System.getProperty(USER_HOME);
+        }
+
+        return home;
     }
 
     private static Optional<String> getPath(String cmd) {
