@@ -87,7 +87,7 @@ public class Main {
         }
 
         String pathStr = arguments.isEmpty() ? System.getProperty(USER_HOME) : arguments.get(0);
-        Path newPath = Path.of(pathStr);
+        Path newPath = currentDirectory.resolve(pathStr).normalize();
 
         if (Files.isDirectory(newPath)) {
             currentDirectory = newPath;
