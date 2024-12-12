@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class Main {
@@ -11,8 +12,11 @@ public class Main {
     private static final String EXIT = "exit";
     private static final String ECHO = "echo";
     private static final String PWD = "pwd";
+    private static final String CD = "cd";
     private static final String USER_DIR = "user.dir";
-    private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE, PWD);
+    private static final String USER_HOME = "user.home";
+    private static final List<String> BUILT_IN_COMMANDS = List.of(EXIT, ECHO, TYPE, PWD, CD);
+    private static Path currentDirectory = Paths.get(System.getProperty(USER_DIR));
 
     public static void main(String[] args) {
 
@@ -36,6 +40,8 @@ public class Main {
                 handleType(arguments);
             } else if (command.equals(PWD)) {
                 handlePwd();
+            } else if (command.equals(CD)) {
+                handleCd(arguments);
             } else {
                 executeCommand(command, arguments);
             }
@@ -71,8 +77,23 @@ public class Main {
     }
 
     private static void handlePwd() {
-        String currentDirectory = System.getProperty(USER_DIR);
-        System.out.println(currentDirectory);
+        System.out.println(currentDirectory.toAbsolutePath());
+    }
+
+    private static void handleCd(List<String> arguments) {
+        if (arguments.size() > 1) {
+            System.out.println("cd: too many arguments. Just specify one path");
+            return;
+        }
+
+        String pathStr = arguments.isEmpty() ? System.getProperty(USER_HOME) : arguments.get(0);
+        Path newPath = Path.of(pathStr);
+
+        if (Files.isDirectory(newPath)) {
+            currentDirectory = newPath;
+        } else {
+            System.out.println("cd: " + pathStr + ": No such file or directory");
+        }
     }
 
     private static Optional<String> getPath(String cmd) {
