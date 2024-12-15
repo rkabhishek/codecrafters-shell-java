@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
@@ -32,9 +34,23 @@ public class Main {
                 System.exit(0);
             }
 
-            String[] parts = input.split(" ");
-            String command = parts[0];
-            List<String> arguments = Arrays.asList(Arrays.copyOfRange(parts, 1, parts.length));
+            Pattern pattern = Pattern.compile("'[^']*'|\\S+");
+            Matcher matcher = pattern.matcher(input);
+
+            String command = matcher.find() ? matcher.group() : null;
+            List<String> arguments = new ArrayList<>();
+
+            if (command == null) {
+                continue;
+            }
+
+            while (matcher.find()) {
+                String arg = matcher.group();
+                if (arg.startsWith("'") && arg.endsWith("'")) {
+                    arg = arg.substring(1, arg.length() - 1);
+                }
+                arguments.add(arg);
+            }
 
             if (command.equals(ECHO)) {
                 handleEcho(arguments);
