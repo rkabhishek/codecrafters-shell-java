@@ -1,6 +1,9 @@
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
+    private static final String[] BUILT_IN_COMMANDS = {"echo", "type", "exit"};
+
     public static void main(String[] args) throws Exception {
         System.out.print("$ ");
 
@@ -10,8 +13,13 @@ public class Main {
         while (!input.isEmpty()) {
             if (input.equals("exit 0")) {
                 System.exit(0);
+
             } else if (input.startsWith("echo")) {
                 echo(input);
+
+            } else if (input.startsWith("type")) {
+                type(input);
+                
             } else {
                 System.out.println(input + ": command not found");
             }
@@ -29,6 +37,15 @@ public class Main {
         }
 
         System.out.println();
+    }
+
+    private static void type(String input) {
+        String command = input.split(" ")[1];
+        if (Arrays.asList(BUILT_IN_COMMANDS).contains(command)) {
+            System.out.println(command + " is a shell builtin");
+        } else {
+            System.out.println(command + ": not found");
+        }
     }
 
 
