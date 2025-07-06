@@ -11,13 +11,7 @@ public class Main {
             if (input.equals("exit 0")) {
                 System.exit(0);
             } else if (input.startsWith("echo")) {
-                String[] arguments = input.split("\\s+");
-                for (int i = 1; i < arguments.length; i++) {
-                    System.out.print(arguments[i]);
-                    System.out.print(" ");
-                }
-
-                System.out.println();
+                echo(input);
             } else {
                 System.out.println(input + ": command not found");
             }
@@ -26,6 +20,20 @@ public class Main {
             input = scanner.nextLine().trim();
         }
     }
+
+    private static void echo(String input) {
+        String[] arguments = input.split("\\s+");
+        for (int i = 1; i < arguments.length; i++) {
+            System.out.print(arguments[i]);
+            System.out.print(" ");
+        }
+
+        System.out.println();
+    }
+
+
+
+
 
 
 }
