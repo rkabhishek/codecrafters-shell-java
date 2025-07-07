@@ -19,7 +19,7 @@ public class Main {
 
             } else if (input.startsWith("type")) {
                 type(input);
-                
+
             } else {
                 System.out.println(input + ": command not found");
             }
@@ -40,17 +40,13 @@ public class Main {
     }
 
     private static void type(String input) {
-        String command = input.split(" ")[1];
-        if (Arrays.asList(BUILT_IN_COMMANDS).contains(command)) {
-            System.out.println(command + " is a shell builtin");
-        } else {
-            System.out.println(command + ": not found");
+        String[] arguments = input.split("\\s+");
+        for (int i = 1; i < arguments.length; i++) {
+            if (Arrays.asList(BUILT_IN_COMMANDS).contains(arguments[i])) {
+                System.out.println(arguments[i] + " is a shell builtin");
+            } else {
+                System.out.println(arguments[i] + ": not found");
+            }
         }
     }
-
-
-
-
-
-
 }
